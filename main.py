@@ -9,7 +9,8 @@ from pygments.formatters import HtmlFormatter
 
 
 def create_app(test_config=None):
-  thread_event = threading.Event()
+  time_event = threading.Event()
+  text_event = threading.Event()
   app = flask.Flask(__name__)
 
   app.config['DISPLAY'] = display()
@@ -21,21 +22,21 @@ def create_app(test_config=None):
 
   # Background Helper Functions
   def time_background():
-      while thread_event.is_set():
+      while time_event.is_set():
           d = app.config['DISPLAY']
           try:
             d.print_time()
-            thread_event.wait(10)
+            time_event.wait(10)
           except ConnectionError as e:
             logging.warn('Time could not get lock')
             return
   
   def text_background(msg: str, effect: str, wipe: bool):
-      while thread_event.is_set():
+      while text_event.is_set():
           d = app.config['DISPLAY']
           try:
             d.write_text(msg, effect, wipe)
-            thread_event.wait(10)
+            text_event.wait(10)
           except ConnectionError as e:
             logging.warn('Text could not get lock')
             return
@@ -57,8 +58,8 @@ def create_app(test_config=None):
   
   @app.route("/message", methods=["POST"])
   def message():
-      thread_event.set()
-      thread_event.clear()
+      time_event.clear()
+      text_event.clear()
 
       d = app.config['DISPLAY']
 
@@ -71,6 +72,7 @@ def create_app(test_config=None):
       
       thread = threading.Thread(target=text_background, args=(msg, effect, wipe))
       thread.start()
+      text_event.set()
 
       if(thread.is_alive()):
           return "OK", 200
@@ -79,12 +81,14 @@ def create_app(test_config=None):
 
   @app.route("/time", methods=["GET"])
   def time():
-      thread_event.clear()
-      thread_event.set()
+      time_event.clear()
+      text_event.clear()
+      
       
       thread = threading.Thread(target=time_background)
       thread.start()
-
+      time_event.set()
+      
       if(thread.is_alive()):
           return "OK", 200
 
