@@ -19,8 +19,8 @@ def create_app(test_config=None):
 
   app.config['DISPLAY'].write_text(socket.gethostbyname(s.getsockname()[0]), "split", True)
 
-  # Background Helper Function
-  def backgroundTask():
+  # Background Helper Functions
+  def time_background():
       while thread_event.is_set():
           d = app.config['DISPLAY']
           try:
@@ -28,6 +28,16 @@ def create_app(test_config=None):
             thread_event.wait(10)
           except ConnectionError as e:
             logging.warn('Time could not get lock')
+            return
+  
+  def text_background(msg: str, effect: str, wipe: bool):
+      while thread_event.is_set():
+          d = app.config['DISPLAY']
+          try:
+            d.write_text(msg, effect, wipe)
+            thread_event.wait(10)
+          except ConnectionError as e:
+            logging.warn('Text could not get lock')
             return
 
   # Endpoints 
@@ -55,22 +65,24 @@ def create_app(test_config=None):
       msg = request.form["message"]
       effect = request.form["effect"] if "effect" in request.form else "split"
       wipe = request.form["wipe"] if "wipe" in request.form else False
+
+      if len(msg) > 48:
+          return "Text too long", 400
       
-      try: 
-          d.write_text(msg, effect, wipe)
-      except ValueError as e:
-          return str(e), 400
-      except ConnectionError as e:
-          return str(e), 503
-      
-      return "OK", 200
+      thread = threading.Thread(target=text_background, args=(msg, effect, wipe))
+      thread.start()
+
+      if(thread.is_alive()):
+          return "OK", 200
+      else:
+          return "Display is locked", 503
 
   @app.route("/time", methods=["GET"])
   def time():
       thread_event.clear()
       thread_event.set()
       
-      thread = threading.Thread(target=backgroundTask)
+      thread = threading.Thread(target=time_background)
       thread.start()
 
       if(thread.is_alive()):
