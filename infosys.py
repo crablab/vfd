@@ -81,8 +81,7 @@ class display:
         """
         for i in range(0, 30):
             self.master.DS009(f'{" " * i}#{" " * (MAX_DISPLAY_LENGTH + 4 - i)}.')
-        
-        time.sleep(.1)
+            time.sleep(.1)
         
     def _pad_string(self, text: str, suffix: bool = False):
         """
