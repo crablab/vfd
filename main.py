@@ -3,6 +3,7 @@ import flask
 from flask import request
 import threading
 import socket
+import logging
 
 thread_event = threading.Event()
 app = flask.Flask(__name__)
@@ -10,8 +11,12 @@ app = flask.Flask(__name__)
 def backgroundTask():
     while thread_event.is_set():
         d = app.config['DISPLAY']
-        d.print_time()
-        thread_event.wait(10)
+        try:
+          d.print_time()
+          thread_event.wait(10)
+        except ConnectionError as e:
+          logging.warn('Time could not get lock')
+          return
 
 @app.route("/message", methods=["POST"])
 def message():
@@ -41,7 +46,10 @@ def time():
     thread = threading.Thread(target=backgroundTask)
     thread.start()
 
-    return "OK", 200
+    if(thread.is_alive()):
+        return "OK", 200
+
+    return "Display is locked", 503
 
 
 if __name__ == "__main__":

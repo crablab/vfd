@@ -1,27 +1,29 @@
 from pyfis.ibis import SerialIBISMaster
 import time
+from threading import Lock
 
 MAX_DISPLAY_LENGTH = 24
 
 class display:
     def __init__(self):
         self.master = SerialIBISMaster("/dev/ttyUSB0", debug=False)
-        self.lock   = False
+        self.lock   = Lock()
 
-    def write_text(self, text: str, effect: str = 'split', wipe: bool = False) -> str:
+    def write_text(self, text: str, effect: str = 'split', wipe: bool = False):
         """
         Write text to the IBIS device
         """
 
         if(len(text) > 48):
-            ValueError("Text too long")
+            raise ValueError("Text too long")
             return
         
-        if(self.lock):
-            ConnectionError("Display is locked")
+        if(self.lock.locked()):
+            raise ConnectionError("Display is locked")
             return
         
-        self.lock = True
+        self.lock.acquire(1)
+
         if wipe:
             self._wipe_display()
 
@@ -29,21 +31,23 @@ class display:
             self._do_chase(text)
         elif effect == "split":
             self._do_split(text)
-
-        self.lock = False
+        
+        self.lock.release()
 
     def print_time(self):
         """
         Print the current time to the IBIS device
         """
 
-        if(self.lock):
-            ConnectionError("Display is locked")
+        if(self.lock.locked()):
+            raise ConnectionError("Display is locked")
             return
         
-        self.lock = True
+        self.lock.acquire(1)
+
         self.master.DS009(f'{time.strftime("%H:%M")}')
-        self.lock = False
+        
+        self.lock.release()
 
     def _do_split(self, text: str):
         """
