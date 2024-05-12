@@ -29,7 +29,7 @@ curl vfd.crablab.uk/message -F message=Hello,\ World! -F effect=split
 ## Run locally 
 
 ```
-pip3 install flask pyfis
+pip3 install flask pyfis markdown pygments
 flask --app main.py run
 ```
 

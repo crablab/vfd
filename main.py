@@ -79,3 +79,8 @@ def create_app(test_config=None):
       return "Display is locked", 503
 
   return app
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run()
