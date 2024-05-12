@@ -5,58 +5,60 @@ import threading
 import socket
 import logging
 
-thread_event = threading.Event()
-app = flask.Flask(__name__)
+def create_app(test_config=None):
+  thread_event = threading.Event()
+  app = flask.Flask(__name__)
 
-def backgroundTask():
-    while thread_event.is_set():
-        d = app.config['DISPLAY']
-        try:
-          d.print_time()
-          thread_event.wait(10)
-        except ConnectionError as e:
-          logging.warn('Time could not get lock')
-          return
+  app.config['DISPLAY'] = display()
 
-@app.route("/message", methods=["POST"])
-def message():
-    thread_event.set()
-    thread_event.clear()
+  s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  s.connect(("8.8.8.8", 80))
 
-    d = app.config['DISPLAY']
+  app.config['DISPLAY'].write_text(socket.gethostbyname(s.getsockname()[0]), "split", True)
 
-    msg = request.form["message"]
-    effect = request.form["effect"] if "effect" in request.form else "split"
-    wipe = request.form["wipe"] if "wipe" in request.form else False
-    
-    try: 
-        d.write_text(msg, effect, wipe)
-    except ValueError as e:
-        return str(e), 400
-    except ConnectionError as e:
-        return str(e), 503
-    
-    return "OK", 200
+  # Background Helper Function
+  def backgroundTask():
+      while thread_event.is_set():
+          d = app.config['DISPLAY']
+          try:
+            d.print_time()
+            thread_event.wait(10)
+          except ConnectionError as e:
+            logging.warn('Time could not get lock')
+            return
 
-@app.route("/time", methods=["GET"])
-def time():
-    thread_event.clear()
-    thread_event.set()
-    
-    thread = threading.Thread(target=backgroundTask)
-    thread.start()
+  # Endpoints 
+  @app.route("/message", methods=["POST"])
+  def message():
+      thread_event.set()
+      thread_event.clear()
 
-    if(thread.is_alive()):
-        return "OK", 200
+      d = app.config['DISPLAY']
 
-    return "Display is locked", 503
+      msg = request.form["message"]
+      effect = request.form["effect"] if "effect" in request.form else "split"
+      wipe = request.form["wipe"] if "wipe" in request.form else False
+      
+      try: 
+          d.write_text(msg, effect, wipe)
+      except ValueError as e:
+          return str(e), 400
+      except ConnectionError as e:
+          return str(e), 503
+      
+      return "OK", 200
 
+  @app.route("/time", methods=["GET"])
+  def time():
+      thread_event.clear()
+      thread_event.set()
+      
+      thread = threading.Thread(target=backgroundTask)
+      thread.start()
 
-if __name__ == "__main__":
-    app.config['DISPLAY'] = display()
+      if(thread.is_alive()):
+          return "OK", 200
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
+      return "Display is locked", 503
 
-    app.config['DISPLAY'].write_text(socket.gethostbyname(s.getsockname()[0]), "split", True)
-    app.run()
+  return app

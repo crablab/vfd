@@ -26,6 +26,13 @@ curl vfd.crablab.uk/time
 curl vfd.crablab.uk/message -F message=Hello,\ World! -F effect=split
 ```
 
+## Run locally 
+
+```
+pip3 install flask pyfis
+flask --app main.py run
+```
+
 ## Contributions 
 
 Improvements are welcome. I spent about an hour making a very minimal interface.
