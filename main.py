@@ -4,6 +4,9 @@ from flask import request
 import threading
 import socket
 import logging
+import markdown.extensions.fenced_code
+from pygments.formatters import HtmlFormatter
+
 
 def create_app(test_config=None):
   thread_event = threading.Event()
@@ -28,6 +31,20 @@ def create_app(test_config=None):
             return
 
   # Endpoints 
+  @app.route("/")
+  def index():
+      formatter = HtmlFormatter(style="emacs",full=True,cssclass="codehilite")
+      css_string = formatter.get_style_defs()
+      readme_file = open("README.md", "r")
+
+      md_template_string = markdown.markdown(
+          readme_file.read(), extensions=["fenced_code"]
+      )
+
+      md_css_string = "<style>" + css_string + "</style>"
+      md_template = md_css_string + md_template_string
+      return md_template
+  
   @app.route("/message", methods=["POST"])
   def message():
       thread_event.set()
