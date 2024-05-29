@@ -1,5 +1,7 @@
 from infosys import display
+from serial import SerialException
 import flask
+from time import sleep
 from flask import request
 import threading
 import socket
@@ -27,7 +29,7 @@ def create_app(test_config=None):
           try:
             d.print_time()
             time_event.wait(10)
-          except ConnectionError as e:
+          except SerialException as e:
             logging.warn('Time could not get lock')
             return
   
@@ -37,7 +39,7 @@ def create_app(test_config=None):
           try:
             d.write_text(msg, effect, wipe)
             text_event.wait(10)
-          except ConnectionError as e:
+          except SerialException as e:
             logging.warn('Text could not get lock')
             return
 
@@ -60,7 +62,8 @@ def create_app(test_config=None):
   def message():
       time_event.clear()
       text_event.clear()
-
+      text_event.set()
+      
       d = app.config['DISPLAY']
 
       msg = request.form["message"]
@@ -72,7 +75,8 @@ def create_app(test_config=None):
       
       thread = threading.Thread(target=text_background, args=(msg, effect, wipe))
       thread.start()
-      text_event.set()
+
+      sleep(1)
 
       if(thread.is_alive()):
           return "OK", 200
@@ -81,13 +85,14 @@ def create_app(test_config=None):
 
   @app.route("/time", methods=["GET"])
   def time():
-      time_event.clear()
       text_event.clear()
-      
+      time_event.clear()
+      time_event.set()
       
       thread = threading.Thread(target=time_background)
       thread.start()
-      time_event.set()
+      
+      sleep(1)
       
       if(thread.is_alive()):
           return "OK", 200
