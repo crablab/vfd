@@ -1,7 +1,9 @@
 # Infosystems Display
 
 The backend for the Infosystems VFD display that is 
-located somewhere at EMF 2024.
+located in the bar at EMF 2024.
+
+It's from a German tram and made in 2000. 
 
 Hostname: `vfd.crablab.uk`
 
@@ -27,6 +29,8 @@ curl vfd.crablab.uk/time
 ```
 curl vfd.crablab.uk/message -F message=Hello,\ World! -F effect=split
 ```
+
+If the display returns a 503 then it's busy serving another request. Keep trying? 
 
 ## Run locally 
 
