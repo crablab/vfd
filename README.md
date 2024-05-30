@@ -8,10 +8,12 @@ Hostname: `vfd.crablab.uk`
 ## Controlling the display 
 
 Two endpoints are provided: 
+
 - `/time` - displays an updating clock 
 - `/message` - takes POST data to display a message 
 
 The `/message` endpoint takes the following form data: 
+
 - `message` - text to display (up to 48 chars)
 - `effect`  - chase or split 
 - `wipe`    - True/False
