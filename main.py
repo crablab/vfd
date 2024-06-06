@@ -1,14 +1,15 @@
 from infosys import display
+from domain import update_display_record
 from serial import SerialException
 import flask
 from time import sleep
 from flask import request
+import os
 import threading
 import socket
 import logging
 import markdown.extensions.fenced_code
 from pygments.formatters import HtmlFormatter
-
 
 def create_app(test_config=None):
   time_event = threading.Event()
@@ -17,10 +18,23 @@ def create_app(test_config=None):
 
   app.config['DISPLAY'] = display()
 
+  # Try to get the IP address of the device
+  # Print it to the display and update the DNS record
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
   s.connect(("8.8.8.8", 80))
 
-  app.config['DISPLAY'].write_text(socket.gethostbyname(s.getsockname()[0]), "split", True)
+  ip = socket.gethostbyname(s.getsockname()[0])
+
+  app.config['DISPLAY'].write_text(ip, "split", True)
+
+  domain_status = update_display_record(os.environ['NAME'], ip)
+
+  if domain_status:
+      logging.info('Domain Updated')
+      app.config['DISPLAY'].write_text("Domain Updated", "split", True)
+  else:
+      logging.info('Domain Update Failed')
+      app.config['DISPLAY'].write_text("Domain Update Failed", "split", True)
 
   # Background Helper Functions
   def time_background():
