@@ -11,6 +11,8 @@ import logging
 import markdown.extensions.fenced_code
 from pygments.formatters import HtmlFormatter
 
+logging.basicConfig(level=logging.INFO)
+
 def create_app(test_config=None):
   time_event = threading.Event()
   text_event = threading.Event()
