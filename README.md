@@ -5,7 +5,7 @@ located in the bar at EMF 2024.
 
 It's from a German tram and made in 2000. 
 
-Hostname: `vfd.crablab.uk`
+Hostname: `vfd.display.crablab.uk`
 
 ## Controlling the display 
 
@@ -23,11 +23,11 @@ The `/message` endpoint takes the following form data:
 eg. 
 
 ```
-curl vfd.crablab.uk/time
+curl vfd.display.crablab.uk/time
 ```
 
 ```
-curl vfd.crablab.uk/message -F message=Hello,\ World! -F effect=split
+curl vfd.display.crablab.uk/message -F message=Hello,\ World! -F effect=split
 ```
 
 If the display returns a 503 then it's busy serving another request. Keep trying? 

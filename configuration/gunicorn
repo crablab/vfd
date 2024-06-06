@@ -1,0 +1,18 @@
+[Unit]
+Description=Gunicorn instance to serve the vfd
+After=network.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+User=pi
+Restart=on-failure
+RestartSec=5s
+WorkingDirectory=/home/pi/vfd
+ExecStart=gunicorn --workers 1 main:app
+Environment="NAME=vfd"
+Environment="aws_access_key="
+Environment="aws_secret_access_key="
+
+[Install]
+WantedBy=multi-user.target
