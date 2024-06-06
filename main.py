@@ -76,7 +76,7 @@ def create_app(test_config=None):
   
   @app.route("/demo")
   def demo():
-      render_template("demo.html")
+      return render_template("demo.html")
 
   @app.route("/message", methods=["POST"])
   def message():
