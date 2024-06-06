@@ -1,5 +1,6 @@
 import boto3
-import logging 
+import logging
+import os
 
 def update_display_record(name, value):
     try:
