@@ -30,7 +30,7 @@ curl vfd.display.crablab.uk/time
 curl vfd.display.crablab.uk/message -F message=Hello,\ World! -F effect=split
 ```
 
-If the display returns a 503 then it's busy serving another request. Keep trying? 
+If the display returns a 409 then it's busy serving another request. Keep trying? 
 
 ## Run locally 
 

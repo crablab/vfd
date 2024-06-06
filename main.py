@@ -95,7 +95,7 @@ def create_app(test_config=None):
       if(thread.is_alive()):
           return "OK", 200
       else:
-          return "Display is locked", 503
+          return "Someone else is updating the display! Try again soon.", 409
 
   @app.route("/time", methods=["GET"])
   def time():
@@ -111,7 +111,7 @@ def create_app(test_config=None):
       if(thread.is_alive()):
           return "OK", 200
 
-      return "Display is locked", 503
+      return "Someone else is updating the display! Try again soon.", 409
 
   return app
 
