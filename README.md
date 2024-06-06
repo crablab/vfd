@@ -9,7 +9,7 @@ Hostname: `vfd.display.crablab.uk`
 
 ## Demosite
 
-There's a demo available at [vfd.display.crablab.uk/demo](http://vfd.display.crablab.uk/demo). 
+There's a demo available at [vfd.display.crablab.uk/demo](/demo). 
 This provides a basic interface to interact with the display.
 
 ## Controlling the display 
