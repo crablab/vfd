@@ -7,6 +7,11 @@ It's from a German tram and made in 2000.
 
 Hostname: `vfd.display.crablab.uk`
 
+## Demosite
+
+There's a demo available at [vfd.display.crablab.uk/demo](http://vfd.display.crablab.uk/demo). 
+This provides a basic interface to interact with the display.
+
 ## Controlling the display 
 
 Two endpoints are provided: 

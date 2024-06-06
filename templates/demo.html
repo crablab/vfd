@@ -1,0 +1,31 @@
+<head>
+  <title>Control the VFD</title>
+</head>
+<body>
+<h1>Control the VFD</h1>
+<p>A basic webpage which allows you to send messages to the display.</p>
+<p>If you get an error, the display is probably in use. Try again!</p>
+
+<h2>Send a message</h2>
+<form action="http://vfd.display.crablab.uk/message" method="POST">
+  <label>Text to display</label>
+  <input type="text" length="48" name="message" placeholder="Hack the planet">
+
+  <label>Effect</label>
+  <select name="effect">
+    <option value="chase">Chase</option>
+    <option value="split">Split</option>
+  </select>
+
+  <label>Wipe?</label>
+  <input type="checkbox" name="wipe" value="true">
+
+  <button type="submit">Go</button>
+</form>
+
+<h2>Set the time</h2>
+<form action="http://vfd.display.crablab.uk/time" method="GET">
+  <button type="submit">Display time</button>
+</form>
+
+</body>

@@ -3,7 +3,7 @@ from domain import update_display_record
 from serial import SerialException
 import flask
 from time import sleep
-from flask import request
+from flask import request, render_template
 import os
 import threading
 import socket
@@ -74,6 +74,10 @@ def create_app(test_config=None):
       md_template = md_css_string + md_template_string
       return md_template
   
+  @app.route("/demo")
+  def demo():
+      render_template("demo.html")
+
   @app.route("/message", methods=["POST"])
   def message():
       time_event.clear()
