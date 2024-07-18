@@ -1,24 +1,21 @@
-from infosys import display
 from domain import update_display_record
-from serial import SerialException
 import flask
+from infosys import display
+from rabbit import time_background, text_background, display_tasks
 from time import sleep
 from flask import request, render_template
 import os
-import threading
 import socket
 import logging
 import markdown.extensions.fenced_code
 from pygments.formatters import HtmlFormatter
 
 logging.basicConfig(level=logging.INFO)
-
+ 
 def create_app(test_config=None):
-  time_event = threading.Event()
-  text_event = threading.Event()
   app = flask.Flask(__name__)
 
-  app.config['DISPLAY'] = display()
+  # display = display()
 
   # Try to get the IP address of the device
   # Print it to the display and update the DNS record
@@ -27,37 +24,16 @@ def create_app(test_config=None):
 
   ip = socket.gethostbyname(s.getsockname()[0])
 
-  app.config['DISPLAY'].write_text(ip, "split", True)
+  # display.write_text(ip, "split", True)
 
   domain_status = update_display_record(os.environ['NAME'], ip)
 
   if domain_status:
       logging.info('Domain Updated')
-      app.config['DISPLAY'].write_text("Domain Updated", "split", True)
+      # display.write_text("Domain Updated", "split", True)
   else:
       logging.info('Domain Update Failed')
-      app.config['DISPLAY'].write_text("Domain Update Failed", "split", True)
-
-  # Background Helper Functions
-  def time_background():
-      while time_event.is_set():
-          d = app.config['DISPLAY']
-          try:
-            d.print_time()
-            time_event.wait(10)
-          except SerialException as e:
-            logging.warn('Time could not get lock')
-            return
-  
-  def text_background(msg: str, effect: str, wipe: bool):
-      while text_event.is_set():
-          d = app.config['DISPLAY']
-          try:
-            d.write_text(msg, effect, wipe)
-            text_event.wait(10)
-          except SerialException as e:
-            logging.warn('Text could not get lock')
-            return
+      # display.write_text("Domain Update Failed", "split", True)
 
   # Endpoints 
   @app.route("/")
@@ -76,16 +52,10 @@ def create_app(test_config=None):
   
   @app.route("/demo")
   def demo():
-      render_template("demo.html")
+      return render_template("demo.html")
 
   @app.route("/message", methods=["POST"])
   def message():
-      time_event.clear()
-      text_event.clear()
-      text_event.set()
-      
-      d = app.config['DISPLAY']
-
       msg = request.form["message"]
       effect = request.form["effect"] if "effect" in request.form else "split"
       wipe = request.form["wipe"] if "wipe" in request.form else False
@@ -93,31 +63,15 @@ def create_app(test_config=None):
       if len(msg) > 48:
           return "Text too long", 400
       
-      thread = threading.Thread(target=text_background, args=(msg, effect, wipe))
-      thread.start()
+      text_background.delay(msg, effect, wipe)
 
-      sleep(1)
-
-      if(thread.is_alive()):
-          return "OK", 200
-      else:
-          return "Someone else is updating the display! Try again soon.", 409
+      return "OK - Task Enqueued", 200
 
   @app.route("/time", methods=["GET"])
   def time():
-      text_event.clear()
-      time_event.clear()
-      time_event.set()
-      
-      thread = threading.Thread(target=time_background)
-      thread.start()
-      
-      sleep(1)
-      
-      if(thread.is_alive()):
-          return "OK", 200
+      time_background.delay()
 
-      return "Someone else is updating the display! Try again soon.", 409
+      return "OK - Task Enqueued", 200
 
   return app
 
