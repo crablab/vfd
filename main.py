@@ -5,20 +5,17 @@ from rabbit import time_background, text_background, display_tasks
 from time import sleep
 from flask import request, render_template
 import os
-import threading
 import socket
 import logging
 import markdown.extensions.fenced_code
 from pygments.formatters import HtmlFormatter
 
 logging.basicConfig(level=logging.INFO)
-
+ 
 def create_app(test_config=None):
-  time_event = threading.Event()
-  text_event = threading.Event()
   app = flask.Flask(__name__)
 
-  display = display()
+  # display = display()
 
   # Try to get the IP address of the device
   # Print it to the display and update the DNS record
@@ -27,16 +24,16 @@ def create_app(test_config=None):
 
   ip = socket.gethostbyname(s.getsockname()[0])
 
-  display.write_text(ip, "split", True)
+  # display.write_text(ip, "split", True)
 
   domain_status = update_display_record(os.environ['NAME'], ip)
 
   if domain_status:
       logging.info('Domain Updated')
-      display.write_text("Domain Updated", "split", True)
+      # display.write_text("Domain Updated", "split", True)
   else:
       logging.info('Domain Update Failed')
-      display.write_text("Domain Update Failed", "split", True)
+      # display.write_text("Domain Update Failed", "split", True)
 
   # Endpoints 
   @app.route("/")
