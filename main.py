@@ -80,7 +80,12 @@ app = create_app()
 if __name__ == "__main__":
     app.run()
 
+    logging.info("Waiting to start Celery worker...")
     sleep(20)
     # Starts the Celery worker
     worker = display_tasks.Worker()
-    worker.start()
+    options = {
+        'loglevel': 'INFO',
+        'broker': os.environ['BROKER_URL']
+    }
+    worker.start(**options)
